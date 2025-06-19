@@ -41,5 +41,18 @@ pub mod favorites {
 }
 
 
-#[derive(Accounts)]
-pub struct Initialize {}
+// we are using "account" macro because we will need to save the instances of structs in an account whenever we store it.
+// To let anchor know how big the "Favorites" is we are also going to use "InitSpace". That gives all of our instances of favorites the InitSpace attribute which is the total space used by all the items inside.
+// We also need to specify the size of each individual item or property in struct. It is because blockchain does not use heap or async/await. It means everything is stored on stack and needs to be deterministic. Since strings can be of any length we need to specify a max length for strings so that it will allocate that space on stack
+#[account]
+#[derive(InitSpace)]
+pub struct Favorites {
+    pub number: u64,
+    // 50 bytes
+    #[max_len(50)]
+    pub color: String,
+
+    // since vector is nested, here we are saying that length of vector array is 5 items only and each individual item ( which is string) can be of 50 bytes
+    #[max_len(5, 50)]
+    pub hobbies: Vec<String>,
+}
