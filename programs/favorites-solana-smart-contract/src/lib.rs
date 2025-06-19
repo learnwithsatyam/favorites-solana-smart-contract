@@ -56,3 +56,24 @@ pub struct Favorites {
     #[max_len(5, 50)]
     pub hobbies: Vec<String>,
 }
+
+// when people are going to call the "setFavorites" function from module, they are going to need to provide a list of accounts they are gonna modify in the blockchain . One of the good things about solana is that if there is a bunch of people on one side  who are running a transaction involing their accounts and then there are a bunch of people on other hand who are running a different transaction involving their accounts, those transactions dont't block each other. Accounts don't overlap and solana can perform or exeute transactions at the same time.
+// We will make a struct to store this information. Below is the struct of accounts for out "setFavorites"instruction handler  so the tradition is the call this struct of accounts as the same thing as our setFavorties instruction handler, just in title case.
+#[derive(Accounts)]
+pub struct SetFavorites<'info> {
+    // here we are saying that signer is mutual because the person who signs the insturctions to setFavorites is going to pay to create SetFavorites account on blockchain.
+    #[account(mut)]
+    pub user: Signer<'info>,
+
+    // also we the person running the setFavorites to specify the SetFavorites account they want to  write to. It does not mean we will let them write to that account , we just need to specify.
+    #[account(
+        init_if_needed,
+        payer=user,
+        space=ANCHOR_DISCRIMINATOR_SIZE + Favorites::INIT_SPACE,
+        seeds = [b"favorites", user.key().as_ref()],
+        bump
+    )]
+    pub favorites: Account<'info, Favorites>,
+
+    pub system_program: Program<'info, System>,
+}
